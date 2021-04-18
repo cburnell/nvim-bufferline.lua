@@ -18,6 +18,15 @@ function M.get_defaults()
     hex("LspDiagnosticsDefaultWarning", "fg", {name = "WarningMsg", attribute = "fg"})
   local info_fg = hex("LspDiagnosticsDefaultInformation", "fg", {name = "Normal", attribute = "fg"})
 
+  -- local lcars_first = hex("LcarsFirst", "fg")
+  -- print(lcars_first)
+  -- local lcars_left_transition = hex("LcarsLeftTransition", )
+  -- local lcars_right_transition = hex
+  -- local lcars_final_transition = hex
+  local lcars_left = hex("LcarsLeft", "fg")
+  local lcars_selected = hex("LcarsSelected", "fg")
+  local lcars_right = hex("LcarsRight", "fg")
+  print(lcars_left)
   local tabline_sel_bg = hex("TabLineSel", "bg", {name = "WildMenu", attribute = "bg"})
 
   -- If the colorscheme is bright we shouldn't do as much shading
@@ -65,6 +74,8 @@ function M.get_defaults()
       diagnostic_indicator = nil
     },
     highlights = {
+      lcars_first = {
+      },
       fill = {
         guifg = comment_fg,
         guibg = separator_background_color

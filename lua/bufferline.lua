@@ -245,6 +245,8 @@ local function get_separator(focused, style)
     return focused and "▌" or "▐"
   elseif style == separator_styles.slant then
     return "", ""
+  elseif style == separator_styles.lcars then
+    return "", ""
   else
     return focused and "▏" or "▕"
   end
@@ -656,6 +658,7 @@ end
 --- @param preferences table
 --- @return string
 local function bufferline(preferences)
+  -- print(preferences)
   local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
   if options.custom_filter then
