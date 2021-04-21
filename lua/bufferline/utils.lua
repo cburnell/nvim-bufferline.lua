@@ -95,7 +95,7 @@ function M.make_clickable(context)
   -- the only way to implement this is using autoload viml functions
   local fn = mode == "multiwindow" and "handle_win_click" or "handle_click"
   local make_clickable_text ="%" .. buf_num .. "@nvim_bufferline#" .. fn .. "@"
-  buffer_parts = M.add_to_buffer_parts(buffer_parts, true, make_clickable_text)
+  buffer_parts = M.add_to_buffer_parts(buffer_parts, true, make_clickable_text, "make_clickable_text")
   return make_clickable_text .. component, buffer_parts
 end
 

@@ -93,7 +93,10 @@ function M.component(context)
   local highlight = highlights[diagnostics.level] or ""
   local diag_highlight = highlights[diagnostics.level.."_diagnostic"] or highlights.diagnostic or ""
   local size = context.length + vim.fn.strwidth(indicator)
-  buffer_parts = utils.add_to_buffer_parts(context.buffer_parts, true, highlight)
+  buffer_parts = utils.add_to_buffer_parts(context.buffer_parts, true, highlight, "highlight")
+  buffer_parts = utils.add_to_buffer_parts(context.buffer_parts, false, diag_highlight, "diag_highlight")
+  buffer_parts = utils.add_to_buffer_parts(context.buffer_parts, true, indicator, "indicator")
+  buffer_parts = utils.add_to_buffer_parts(context.buffer_parts, true, highlights.background, "highlightsbackground")
   return highlight .. context.component .. diag_highlight .. indicator .. highlights.background, size, buffer_parts
 end
 

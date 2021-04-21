@@ -297,16 +297,16 @@ local function indicator_component(context)
     end
     length = length + strwidth(symbol)
     local component_indicator_text =  indicator .. curr_hl.background
-    print("CIT", component_indicator_text)
-    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, component_indicator_text)
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, curr_hl.background, "curr_hl.background")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, indicator, "indicator")
     component = component_indicator_text .. component
   else
     -- since all non-current buffers do not have an indicator they need
     -- to be padded to make up the difference in size
     length = length + strwidth(padding)
     local component_indicator_text = curr_hl.background .. padding
-    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, "currhlbackground")
-    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, "padding")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, padding, "padding")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, curr_hl.background, "curr_hl.background")
     component =  component_indicator_text .. component
   end
   return component, length, buffer_parts
@@ -323,13 +323,19 @@ local function add_prefix(context)
   if state.is_picking and buffer.letter then
     local prefix_info = hl.pick .. buffer.letter .. padding .. hl.background
     component =  prefix_info .. component
-    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, prefix_info, "prefix_info")
+    -- buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, prefix_info, "prefix_info")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, hl.background, "hl.background")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, padding, "padding")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, buffer.letter, "buffer.letter")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, hl.pick, "hl.pick")
     length = length + strwidth(buffer.letter) + strwidth(padding)
   elseif buffer.icon then
     local icon_highlight = highlight_icon(buffer)
     local prefix_info = icon_highlight .. hl.background
     component = prefix_info .. component
-    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, prefix_info, "prefix_info")
+    -- buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, prefix_info, "prefix_info")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, hl.background, "hl.background")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, icon_highlight, "icon_highlight")
     length = length + strwidth(buffer.icon .. padding)
   end
   return component, length, buffer_parts
@@ -350,7 +356,7 @@ local function add_suffix(context)
     local suffix = buffer.modified and hl.modified .. modified or close
     -- print(suffix, "afsuf", buffer.modified, hl.modified, modified, close)
     component = component .. hl.background .. suffix
-    buffer_parts = utils.add_to_buffer_parts(buffer_parts, false, hl.background, "hlbackground")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, false, hl.background, "hl.background")
     buffer_parts = utils.add_to_buffer_parts(buffer_parts, false, suffix, "suffix")
     length = length + (buffer.modified and modified_size or size)
   end
@@ -460,7 +466,7 @@ local function render_buffer(preferences, buffer)
   filename = filename:gsub("%%", "%%%1")
 
   ctx.component = filename
-  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, nil, filename)
+  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, nil, filename, "filename")
 
   ctx.length = ctx.length + strwidth(ctx.component)
   --- apply diagnostics first since we want the highlight
@@ -471,7 +477,7 @@ local function render_buffer(preferences, buffer)
 
   ctx.component = ctx.component .. padding
   ctx.length = ctx.length + strwidth(padding)
-  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, padding)
+  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, padding, "padding")
 
   ctx.component, ctx.length, ctx.buffer_parts = duplicates.component(ctx)
   ctx.component, ctx.length, ctx.buffer_parts = add_prefix(ctx)
@@ -491,8 +497,8 @@ local function render_buffer(preferences, buffer)
   -- sub-components.
   -- print(ctx.component)
   local buffer_component = "%(" .. ctx.component .. "%)"
-  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, true, "%(")
-  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, "%)")
+  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, true, "%(", "comp_begin")
+  ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, "%)", "comp_end")
 
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
@@ -502,11 +508,11 @@ local function render_buffer(preferences, buffer)
   local fn = function(index, num_of_bufs)
     if left_sep then
       buffer_component = left_sep .. buffer_component .. right_sep
-      ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, right_sep)
-      ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, true, left_sep)
+      ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, right_sep, "right_sep")
+      ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, true, left_sep, "left_sep")
     elseif index < num_of_bufs then
       buffer_component = buffer_component .. right_sep
-      ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, right_sep)
+      ctx.buffer_parts = utils.add_to_buffer_parts(ctx.buffer_parts, false, right_sep, "right_sep")
     end
     return buffer_component
   end
@@ -585,11 +591,11 @@ local function truncate(before, current, after, available_width, marker)
       print(buf.current_buf)
       local new_text = process_buffers(p_buf, buf, n_buf)
       for i=buf.buffer_parts.buffer_low+1, buf.buffer_parts.buffer_high-1 do
-        print(i, #buf.buffer_parts[i], "^^^ ", buf.buffer_parts[i], "***")
+        print(i, #buf.buffer_parts[i][1], "^^^ ", buf.buffer_parts[i][1], "***", buf.buffer_parts[i][2])
       end
       -- print(buf.buffer_parts.right_sep)
-      -- line = line .. buf.component(j, #bufs)
-      line = line .. new_text
+      line = line .. buf.component(j, #bufs)
+      -- line = line .. new_text
     end
     return line, marker
   elseif available_width < current.length then

@@ -87,7 +87,7 @@ function M.component(context)
   local number_prefix = prefix(buffer, options.numbers, options.number_style)
   local number_component = number_prefix .. constants.padding
   component = number_component .. component
-  buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, number_component)
+  buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, number_component, "number_component")
   length = length + vim.fn.strwidth(number_component)
   return component, length, buffer_parts
 end
