@@ -3,6 +3,23 @@
 ---------------------------------------------------------------------------//
 local M = {}
 
+
+function M.add_to_buffer_parts(buffer_parts, add_before, item, type)
+  if not buffer_parts.buffer_low and not buffer_parts.buffer_high then
+    buffer_parts[0] = {item, type}
+    buffer_parts.buffer_low = -1
+    buffer_parts.buffer_high = 1
+  elseif add_before then
+    buffer_parts[buffer_parts.buffer_low] = {item, type}
+    buffer_parts.buffer_low = buffer_parts.buffer_low - 1
+  elseif not add_before then
+    buffer_parts[buffer_parts.buffer_high] = {item, type}
+    buffer_parts.buffer_high = buffer_parts.buffer_high + 1
+  end
+  return buffer_parts
+end
+
+
 function M.join(...)
   local t = ""
   for n = 1, select("#", ...) do
@@ -70,13 +87,16 @@ function M.make_clickable(context)
   local mode = context.preferences.options.mode
   local component = context.component
   local buf_num = context.buffer.id
+  local buffer_parts = context.buffer_parts
   if not vim.fn.has("tablineat") then
-    return component
+    return component, buffer_parts
   end
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload viml functions
   local fn = mode == "multiwindow" and "handle_win_click" or "handle_click"
-  return "%" .. buf_num .. "@nvim_bufferline#" .. fn .. "@" .. component
+  local make_clickable_text ="%" .. buf_num .. "@nvim_bufferline#" .. fn .. "@"
+  buffer_parts = M.add_to_buffer_parts(buffer_parts, true, make_clickable_text)
+  return make_clickable_text .. component, buffer_parts
 end
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers

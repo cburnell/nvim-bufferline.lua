@@ -1,4 +1,5 @@
 local constants = require "bufferline/constants"
+local utils = require "bufferline/utils"
 
 local M = {}
 
@@ -78,14 +79,17 @@ function M.component(context)
   local component = context.component
   local options = context.preferences.options
   local length = context.length
+  local buffer_parts = context.buffer_parts
+
   if options.numbers == "none" then
-    return component, length
+    return component, length, buffer_parts
   end
   local number_prefix = prefix(buffer, options.numbers, options.number_style)
   local number_component = number_prefix .. constants.padding
   component = number_component .. component
+  buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, number_component)
   length = length + vim.fn.strwidth(number_component)
-  return component, length
+  return component, length, buffer_parts
 end
 
 return M

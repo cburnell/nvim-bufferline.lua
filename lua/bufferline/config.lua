@@ -24,9 +24,11 @@ function M.get_defaults()
   -- local lcars_right_transition = hex
   -- local lcars_final_transition = hex
   local lcars_left = hex("LcarsLeft", "fg")
-  local lcars_selected = hex("LcarsSelected", "fg")
+  local lcars_sel = hex("LcarsSelected", "fg")
   local lcars_right = hex("LcarsRight", "fg")
   print(lcars_left)
+  print(lcars_sel)
+  print(lcars_right)
   local tabline_sel_bg = hex("TabLineSel", "bg", {name = "WildMenu", attribute = "bg"})
 
   -- If the colorscheme is bright we shouldn't do as much shading
@@ -74,7 +76,33 @@ function M.get_defaults()
       diagnostic_indicator = nil
     },
     highlights = {
-      lcars_first = {
+      lcars_sel_to_bg = {
+        guifg = lcars_sel,
+        guibg = background_color
+      },
+      lcars_sel_to_no = {
+        guifg = lcars_sel,
+        guibg = lcars_right
+      },
+      lcars_no_to_sel = {
+        guifg = lcars_left,
+        guibg = lcars_sel
+      },
+      lcars_left_to_left = {
+        guifg = normal_fg,
+        guibg = lcars_left
+      },
+      lcars_left_to_sel = {
+        guifg = normal_fg,
+        guibg = lcars_left
+      },
+      lcars_right_to_right = {
+        guifg = normal_fg,
+        guibg = lcars_right
+      },
+      lcars_sel_to_right = {
+        guifg = normal_fg,
+        guibg = lcars_right
       },
       fill = {
         guifg = comment_fg,

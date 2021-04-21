@@ -1,6 +1,6 @@
 require "bufferline/buffers"
 local constants = require "bufferline/constants"
-
+local utils = require'bufferline/utils'
 local M = {}
 
 local strwidth = vim.fn.strwidth
@@ -101,6 +101,7 @@ function M.component(context)
   local options = context.preferences.options
   local hl = context.current_highlights
   local length = context.length
+  local buffer_parts = context.buffer_parts
   -- there is no way to enforce a regular tab size as specified by the
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
@@ -113,9 +114,12 @@ function M.component(context)
       end
     )
     component = hl.duplicate .. dir .. hl.background .. component
+    utils.add_to_buffer_parts(buffer_parts, true, hl.background, "hlbackground")
+    utils.add_to_buffer_parts(buffer_parts, true, dir, "dir")
+    utils.add_to_buffer_parts(buffer_parts, true, hl.duplicate, "hlduplicate")
     length = length + strwidth(dir)
   end
-  return component, length
+  return component, length, buffer_parts
 end
 
 return M

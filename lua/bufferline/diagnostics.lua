@@ -1,3 +1,4 @@
+local utils = require "bufferline/utils"
 local M = {}
 
 local severity_name = {
@@ -71,14 +72,17 @@ end
 function M.component(context)
   local opts = context.preferences.options
   if is_disabled(opts.diagnostics) then
-    return context.component, context.length
+    return context.component, context.length, context.buffer_parts
   end
 
   local user_indicator = opts.diagnostics_indicator
   local highlights = context.current_highlights
   local diagnostics = context.buffer.diagnostics
+  local buffer_parts = context.buffer_parts
+  -- print(buffer_parts)
+
   if diagnostics.count < 1 then
-    return context.component, context.length
+    return context.component, context.length, buffer_parts
   end
 
   local indicator = " (" .. diagnostics.count .. ")"
@@ -89,7 +93,8 @@ function M.component(context)
   local highlight = highlights[diagnostics.level] or ""
   local diag_highlight = highlights[diagnostics.level.."_diagnostic"] or highlights.diagnostic or ""
   local size = context.length + vim.fn.strwidth(indicator)
-  return highlight .. context.component .. diag_highlight .. indicator .. highlights.background, size
+  buffer_parts = utils.add_to_buffer_parts(context.buffer_parts, true, highlight)
+  return highlight .. context.component .. diag_highlight .. indicator .. highlights.background, size, buffer_parts
 end
 
 return M

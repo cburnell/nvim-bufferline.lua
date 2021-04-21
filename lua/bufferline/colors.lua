@@ -72,12 +72,12 @@ function M.get_hex(hl_name, part, fallback)
 
   -- try and get hl from name
   local success, hl = pcall(vim.api.nvim_get_hl_by_name, hl_name, true)
-  print(part, hl, hl[part], hl_name)
-  if hl then
-    for k,v in pairs(hl) do
-      print(k,v)
-    end
-  end
+  -- print(part, hl, hl[part], hl_name)
+  -- if hl then
+  --   for k,v in pairs(hl) do
+  --     print(k,v)
+  --   end
+  -- end
   if success and hl and hl[part] then
     -- convert from decimal color value to hex (e.g. 14257292 => "#D98C8C")
     return string.format("#%06x", hl[part])
