@@ -560,6 +560,9 @@ local function get_marker_size(count, element_size)
   return count > 0 and strwidth(count) + element_size or 0
 end
 
+local function truncation_left_component(count, icon, hls)
+  return join(hls.lcars_none.hl, padding, count, padding, icon, padding)
+end
 local function truncation_component(count, icon, hls)
   return join(hls.fill.hl, padding, count, padding, icon, padding)
 end
@@ -597,12 +600,12 @@ local function process_buffers(p_buf, buf, n_buf)
     next_buf = "none"
   end
 
-  print("-----------", this_buf, next_buf)
+  -- print("-----------", this_buf, next_buf)
   local right_sep = this_buf == next_buf and "" or buf.buffer_parts.right_sep
   local right_sep_hl_str = "lcars_".. this_buf .. "_to_" .. next_buf
-  print(right_sep_hl_str)
+  -- print(right_sep_hl_str)
   local right_sep_hl = buf.hl[right_sep_hl_str]
-  print(right_sep_hl)
+  -- print(right_sep_hl)
 
   local b_sel
   local b_vis
@@ -624,10 +627,10 @@ local function process_buffers(p_buf, buf, n_buf)
     elseif b_sel and is_in_table(buf.buffer_parts[i][2], Hls) then
       buf.buffer_parts[i][1] = buf.hl.lcars_sel
     end
-    print("bp", buf.buffer_parts[i][1], #buf.buffer_parts[i][1], buf.buffer_parts[i][2])
+    -- print("bp", buf.buffer_parts[i][1], #buf.buffer_parts[i][1], buf.buffer_parts[i][2])
     to_return = to_return .. buf.buffer_parts[i][1]
   end
-  print(right_sep_hl)
+  -- print(right_sep_hl)
   to_return = to_return .. right_sep_hl .. right_sep
   return to_return
 end
@@ -744,10 +747,14 @@ local function render(bufs, tbs, prefs)
       right_element_size = right_element_size
     }
   )
+  local left_hl = hl.lcars_none.hl
+  for k,v  in ipairs(before) do
+    print(k,v)
+  end
 
   if marker.left_count > 0 then
-    local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
-    line = join(hl.background.hl, icon, padding, line)
+    local icon = truncation_left_component(marker.left_count, left_trunc_icon, hl)
+    line = join(left_hl, icon, padding, line)
   end
   if marker.right_count > 0 then
     local icon = truncation_component(marker.right_count, right_trunc_icon, hl)

@@ -21,9 +21,6 @@ function M.get_defaults()
   local lcars_none = hex("LcarsNone", "fg")
   local lcars_vis = hex("LcarsVis", "fg")
   local lcars_sel = hex("LcarsSelected", "fg")
-  print(lcars_none)
-  print(lcars_vis)
-  print(lcars_sel)
   local tabline_sel_bg = hex("TabLineSel", "bg", {name = "WildMenu", attribute = "bg"})
 
   -- If the colorscheme is bright we shouldn't do as much shading
@@ -84,7 +81,7 @@ function M.get_defaults()
       lcars_sel= {
         guifg = background_color,
         guibg = lcars_sel,
-        gui = "bold"
+        gui = "bold,italic"
       },
       lcars_sel_to_vis = {
         guifg = lcars_sel,
