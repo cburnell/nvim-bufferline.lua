@@ -18,17 +18,12 @@ function M.get_defaults()
     hex("LspDiagnosticsDefaultWarning", "fg", {name = "WarningMsg", attribute = "fg"})
   local info_fg = hex("LspDiagnosticsDefaultInformation", "fg", {name = "Normal", attribute = "fg"})
 
-  -- local lcars_first = hex("LcarsFirst", "fg")
-  -- print(lcars_first)
-  -- local lcars_left_transition = hex("LcarsLeftTransition", )
-  -- local lcars_right_transition = hex
-  -- local lcars_final_transition = hex
-  local lcars_left = hex("LcarsLeft", "fg")
+  local lcars_none = hex("LcarsNone", "fg")
+  local lcars_vis = hex("LcarsVis", "fg")
   local lcars_sel = hex("LcarsSelected", "fg")
-  local lcars_right = hex("LcarsRight", "fg")
-  print(lcars_left)
+  print(lcars_none)
+  print(lcars_vis)
   print(lcars_sel)
-  print(lcars_right)
   local tabline_sel_bg = hex("TabLineSel", "bg", {name = "WildMenu", attribute = "bg"})
 
   -- If the colorscheme is bright we shouldn't do as much shading
@@ -76,33 +71,66 @@ function M.get_defaults()
       diagnostic_indicator = nil
     },
     highlights = {
+      lcars_none= {
+        guifg = background_color,
+        guibg = lcars_none,
+        gui = "bold"
+      },
+      lcars_vis= {
+        guifg = background_color,
+        guibg = lcars_vis,
+        gui = "bold"
+      },
+      lcars_sel= {
+        guifg = background_color,
+        guibg = lcars_sel,
+        gui = "bold"
+      },
+      lcars_sel_to_vis = {
+        guifg = lcars_sel,
+        guibg = lcars_vis
+      },
+      lcars_sel_to_none = {
+        guifg = lcars_sel,
+        guibg = lcars_none
+      },
       lcars_sel_to_bg = {
         guifg = lcars_sel,
         guibg = background_color
       },
-      lcars_sel_to_no = {
-        guifg = lcars_sel,
-        guibg = lcars_right
-      },
-      lcars_no_to_sel = {
-        guifg = lcars_left,
+      lcars_none_to_sel = {
+        guifg = lcars_none,
         guibg = lcars_sel
       },
-      lcars_left_to_left = {
-        guifg = normal_fg,
-        guibg = lcars_left
+      lcars_none_to_vis = {
+        guifg = lcars_none,
+        guibg = lcars_vis
       },
-      lcars_left_to_sel = {
-        guifg = normal_fg,
-        guibg = lcars_left
+      lcars_none_to_none = {
+        guifg = background_color,
+        guibg = lcars_none,
+        gui = "bold"
       },
-      lcars_right_to_right = {
-        guifg = normal_fg,
-        guibg = lcars_right
+      lcars_none_to_bg = {
+        guifg = lcars_none,
+        guibg = background_color
       },
-      lcars_sel_to_right = {
-        guifg = normal_fg,
-        guibg = lcars_right
+      lcars_vis_to_sel = {
+        guifg = lcars_vis,
+        guibg = lcars_sel
+      },
+      lcars_vis_to_vis = {
+        guifg = background_color,
+        guibg = lcars_vis,
+        gui = "bold"
+      },
+      lcars_vis_to_none = {
+        guifg = lcars_vis,
+        guibg = lcars_none
+      },
+      lcars_vis_to_bg = {
+        guifg = background_color,
+        guibg = lcars_vis
       },
       fill = {
         guifg = comment_fg,

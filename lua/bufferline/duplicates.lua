@@ -114,9 +114,9 @@ function M.component(context)
       end
     )
     component = hl.duplicate .. dir .. hl.background .. component
-    utils.add_to_buffer_parts(buffer_parts, true, hl.background, "hlbackground")
+    utils.add_to_buffer_parts(buffer_parts, true, hl.background, "hl.background")
     utils.add_to_buffer_parts(buffer_parts, true, dir, "dir")
-    utils.add_to_buffer_parts(buffer_parts, true, hl.duplicate, "hlduplicate")
+    utils.add_to_buffer_parts(buffer_parts, true, hl.duplicate, "hl.duplicate")
     length = length + strwidth(dir)
   end
   return component, length, buffer_parts

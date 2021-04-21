@@ -107,13 +107,24 @@ local function get_buffer_highlight(buffer, hls)
   local hl = {}
   local h = hls
 
+  hl.lcars_sel= h.lcars_sel.hl
+  hl.lcars_vis= h.lcars_vis.hl
+  hl.lcars_none= h.lcars_none.hl
+
   hl.lcars_sel_to_bg = h.lcars_sel_to_bg.hl
-  hl.lcars_sel_to_no = h.lcars_sel_to_no.hl
-  hl.lcars_no_to_sel = h.lcars_no_to_sel.hl
-  hl.lcars_left_to_left = h.lcars_left_to_left.hl
-  hl.lcars_left_to_sel = h.lcars_left_to_sel.hl
-  hl.lcars_right_to_right = h.lcars_right_to_right.hl
-  hl.lcars_sel_to_bg = h.lcars_sel_to_bg.hl
+  hl.lcars_sel_to_vis = h.lcars_sel_to_vis.hl
+  hl.lcars_sel_to_none = h.lcars_sel_to_none.hl
+
+  hl.lcars_vis_to_sel = h.lcars_vis_to_sel.hl
+  hl.lcars_vis_to_vis = h.lcars_vis_to_vis.hl
+  hl.lcars_vis_to_none = h.lcars_vis_to_none.hl
+  hl.lcars_vis_to_bg = h.lcars_vis_to_bg.hl
+
+  hl.lcars_none_to_sel = h.lcars_none_to_sel.hl
+  hl.lcars_none_to_vis = h.lcars_none_to_vis.hl
+  hl.lcars_none_to_none = h.lcars_none_to_none.hl
+  hl.lcars_none_to_bg = h.lcars_none_to_bg.hl
+
   if buffer:current() then
     hl.background = h.buffer_selected.hl
     hl.modified = h.modified_selected.hl
@@ -254,7 +265,7 @@ local function get_separator(focused, style)
   elseif style == separator_styles.slant then
     return "", ""
   elseif style == separator_styles.lcars then
-    return "", " "
+    return "", ""
   else
     return focused and "▏" or "▕"
   end
@@ -297,8 +308,8 @@ local function indicator_component(context)
     end
     length = length + strwidth(symbol)
     local component_indicator_text =  indicator .. curr_hl.background
-    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, curr_hl.background, "curr_hl.background")
     buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, indicator, "indicator")
+    buffer_parts = utils.add_to_buffer_parts(buffer_parts, true, curr_hl.background, "curr_hl.background")
     component = component_indicator_text .. component
   else
     -- since all non-current buffers do not have an indicator they need
@@ -353,7 +364,8 @@ local function add_suffix(context)
 
   if options.show_buffer_close_icons then
     local close, size = close_icon(buffer.id, options)
-    local suffix = buffer.modified and hl.modified .. modified or close
+    local suffix = buffer.modified and modified or close
+    -- local suffix = buffer.modified and hl.modified .. modified or close
     -- print(suffix, "afsuf", buffer.modified, hl.modified, modified, close)
     component = component .. hl.background .. suffix
     buffer_parts = utils.add_to_buffer_parts(buffer_parts, false, hl.background, "hl.background")
@@ -388,8 +400,9 @@ local function separator_components(context)
   if left_sep then
     length = length + strwidth(left_sep)
   end
-  buffer_parts["left_sep"] = left_separator
-  buffer_parts["right_sep"] = right_separator
+  buffer_parts["left_sep"] = left_sep
+  buffer_parts["right_sep"] = right_sep
+  buffer_parts["sep_hl"] = sep_hl
   return length, left_separator, right_separator, buffer_parts
 end
 
@@ -517,7 +530,7 @@ local function render_buffer(preferences, buffer)
     return buffer_component
   end
 
-  return fn, ctx.length, ctx.buffer_parts
+  return fn, ctx.length, ctx.buffer_parts, ctx.current_highlights
 end
 
 local function render_close(icon)
@@ -535,8 +548,6 @@ local function get_sections(bufs)
       -- We haven't reached the current buffer yet
       current:add(buf)
     elseif current.length == 0 then
-      print(type(buf))
-      buf["current_buf"] = true
       before:add(buf)
     else
       after:add(buf)
@@ -553,8 +564,72 @@ local function truncation_component(count, icon, hls)
   return join(hls.fill.hl, padding, count, padding, icon, padding)
 end
 
+Hls = {"curr_hl.background", "hl.duplicate", "hl.background", "icon_highlight"}
+
+local function is_in_table(i, t)
+  for _, t_i in pairs(t) do
+    if t_i == i then
+      return true
+    end
+  end
+  return false
+end
+
 local function process_buffers(p_buf, buf, n_buf)
-  return buf.buffer_parts[0]
+
+  local this_buf = ""
+  if buf:current() then
+    this_buf = "sel"
+  elseif buf:visible() then
+    this_buf = "vis"
+  else
+    this_buf = "none"
+  end
+
+  local next_buf = ""
+  if not n_buf then
+    next_buf = "bg"
+  elseif n_buf:current() then
+    next_buf = "sel"
+  elseif n_buf:visible() then
+    next_buf = "vis"
+  else
+    next_buf = "none"
+  end
+
+  print("-----------", this_buf, next_buf)
+  local right_sep = this_buf == next_buf and "" or buf.buffer_parts.right_sep
+  local right_sep_hl_str = "lcars_".. this_buf .. "_to_" .. next_buf
+  print(right_sep_hl_str)
+  local right_sep_hl = buf.hl[right_sep_hl_str]
+  print(right_sep_hl)
+
+  local b_sel
+  local b_vis
+  local b_none
+  if buf:current() then
+    b_sel = true
+  elseif buf:visible() then
+    b_vis = true
+  else
+    b_none = true
+  end
+
+  local to_return = ""
+  for i=buf.buffer_parts.buffer_low+1, buf.buffer_parts.buffer_high-1 do
+    if b_none and is_in_table(buf.buffer_parts[i][2], Hls) then
+      buf.buffer_parts[i][1] = buf.hl.lcars_none
+    elseif b_vis and is_in_table(buf.buffer_parts[i][2], Hls) then
+      buf.buffer_parts[i][1] = buf.hl.lcars_vis
+    elseif b_sel and is_in_table(buf.buffer_parts[i][2], Hls) then
+      buf.buffer_parts[i][1] = buf.hl.lcars_sel
+    end
+    print("bp", buf.buffer_parts[i][1], #buf.buffer_parts[i][1], buf.buffer_parts[i][2])
+    to_return = to_return .. buf.buffer_parts[i][1]
+  end
+  print(right_sep_hl)
+  to_return = to_return .. right_sep_hl .. right_sep
+  return to_return
 end
 
 --[[
@@ -586,16 +661,13 @@ local function truncate(before, current, after, available_width, marker)
       local p_buf = bufs[j-1]
       local buf = bufs[j]
       local n_buf = bufs[j+1]
-      print(p_buf, buf, n_buf)
+      -- print(p_buf, buf, n_buf)
       -- print(buf.buffer_parts.right_sep)
-      print(buf.current_buf)
+      -- print(buf.current_buf)
       local new_text = process_buffers(p_buf, buf, n_buf)
-      for i=buf.buffer_parts.buffer_low+1, buf.buffer_parts.buffer_high-1 do
-        print(i, #buf.buffer_parts[i][1], "^^^ ", buf.buffer_parts[i][1], "***", buf.buffer_parts[i][2])
-      end
       -- print(buf.buffer_parts.right_sep)
-      line = line .. buf.component(j, #bufs)
-      -- line = line .. new_text
+      -- line = line .. buf.component(j, #bufs)
+      line = line .. new_text
     end
     return line, marker
   elseif available_width < current.length then
@@ -765,11 +837,11 @@ local function bufferline(preferences)
       state.buffers,
       buf,
       function(b)
-        b.component, b.length, b.buffer_parts = render_buffer(preferences, b)
+        b.component, b.length, b.buffer_parts, buf.hl = render_buffer(preferences, b)
       end
     )
     buf.letter = letters.get(buf)
-    buf.component, buf.length, buf.buffer_parts = render_buffer(preferences, buf)
+    buf.component, buf.length, buf.buffer_parts, buf.hl = render_buffer(preferences, buf)
     state.buffers[i] = buf
   end
 
