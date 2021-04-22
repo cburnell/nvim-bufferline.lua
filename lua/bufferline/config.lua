@@ -126,8 +126,8 @@ function M.get_defaults()
         guibg = lcars_none
       },
       lcars_vis_to_bg = {
-        guifg = background_color,
-        guibg = lcars_vis
+        guifg = lcars_vis,
+        guibg = background_color
       },
       fill = {
         guifg = comment_fg,

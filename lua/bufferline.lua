@@ -564,7 +564,7 @@ local function truncation_left_component(count, icon, hls)
   return join(hls.lcars_none.hl, padding, count, padding, icon, padding)
 end
 local function truncation_component(count, icon, hls)
-  return join(hls.fill.hl, padding, count, padding, icon, padding)
+  return join(hls.lcars_vis_to_bg.hl, padding, count, padding, icon, padding)
 end
 
 Hls = {"curr_hl.background", "hl.duplicate", "hl.background", "icon_highlight"}
@@ -578,8 +578,17 @@ local function is_in_table(i, t)
   return false
 end
 
-local function process_buffers(p_buf, buf, n_buf)
-
+local function process_buffers(p_buf, buf, n_buf, marker_size)
+  local prime_line = ""
+  if not p_buf and marker_size > 0 then
+    if buf:current() then
+      prime_line = buf.hl.lcars_none_to_sel .. buf.buffer_parts.right_sep
+    elseif buf:visible() then
+      prime_line = buf.hl.lcars_none_to_vis .. buf.buffer_parts.right_sep
+    else
+      prime_line = buf.hl.lcars_none_to_none .. ""
+    end
+  end
   local this_buf = ""
   if buf:current() then
     this_buf = "sel"
@@ -618,7 +627,7 @@ local function process_buffers(p_buf, buf, n_buf)
     b_none = true
   end
 
-  local to_return = ""
+  local to_return = prime_line
   for i=buf.buffer_parts.buffer_low+1, buf.buffer_parts.buffer_high-1 do
     if b_none and is_in_table(buf.buffer_parts[i][2], Hls) then
       buf.buffer_parts[i][1] = buf.hl.lcars_none
@@ -627,10 +636,10 @@ local function process_buffers(p_buf, buf, n_buf)
     elseif b_sel and is_in_table(buf.buffer_parts[i][2], Hls) then
       buf.buffer_parts[i][1] = buf.hl.lcars_sel
     end
-    -- print("bp", buf.buffer_parts[i][1], #buf.buffer_parts[i][1], buf.buffer_parts[i][2])
     to_return = to_return .. buf.buffer_parts[i][1]
+    -- print("bp:".. i, to_return)
   end
-  -- print(right_sep_hl)
+  -- print(buf.buffer_parts[0][1])
   to_return = to_return .. right_sep_hl .. right_sep
   return to_return
 end
@@ -660,6 +669,7 @@ local function truncate(before, current, after, available_width, marker)
     -- so don't show anything
     -- Merge all the buffers and render the components
     local bufs = utils.array_concat(before.buffers, current.buffers, after.buffers)
+
     for j=1,#bufs do
       local p_buf = bufs[j-1]
       local buf = bufs[j]
@@ -667,8 +677,9 @@ local function truncate(before, current, after, available_width, marker)
       -- print(p_buf, buf, n_buf)
       -- print(buf.buffer_parts.right_sep)
       -- print(buf.current_buf)
-      local new_text = process_buffers(p_buf, buf, n_buf)
+      local new_text = process_buffers(p_buf, buf, n_buf, left_trunc_marker)
       -- print(buf.buffer_parts.right_sep)
+      -- print(new_text)
       -- line = line .. buf.component(j, #bufs)
       line = line .. new_text
     end
@@ -696,6 +707,7 @@ local function truncate(before, current, after, available_width, marker)
 end
 
 local function parse_render(line, hlfillhl, right_align, tab_components, hltab_closehl, close)
+  -- print(line)
   return join(line, hlfillhl, right_align, tab_components, hltab_closehl, close)
 end
 
@@ -748,10 +760,7 @@ local function render(bufs, tbs, prefs)
     }
   )
   local left_hl = hl.lcars_none.hl
-  for k,v  in ipairs(before) do
-    print(k,v)
-  end
-
+  -- print(line)
   if marker.left_count > 0 then
     local icon = truncation_left_component(marker.left_count, left_trunc_icon, hl)
     line = join(left_hl, icon, padding, line)
@@ -761,7 +770,7 @@ local function render(bufs, tbs, prefs)
     line = join(line, hl.background.hl, icon)
   end
   local to_return = parse_render(line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl, close)
-  print(line)
+  -- print(line)
   return to_return
 end
 
